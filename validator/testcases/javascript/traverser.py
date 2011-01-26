@@ -1,3 +1,5 @@
+import os
+import tempfile
 import json
 import types
 
@@ -88,7 +90,8 @@ class Traverser:
 
     def run(self, data):
         if DEBUG:
-            x = open("/tmp/output.js", "w")
+            dof = os.path.join(tempfile.gettempdir(), "output.js")
+            x = open(dof, "wb")
             x.write(str(data))
             x.close()
 
