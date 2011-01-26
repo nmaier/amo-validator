@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 import tempfile
-from cStringIO import StringIO
+from StringIO import StringIO
 
 import validator.testcases.javascript.traverser as traverser
 from validator.constants import SPIDERMONKEY_INSTALLATION
@@ -160,11 +160,10 @@ def strip_weird_chars(chardata, err=None, name=""):
     out_code = StringIO()
     has_warned_ctrlchar = False
 
-    for line in chardata.split("\n"):
-
+    for line in chardata.split(u"\n"):
         charpos = 0
         for char in line:
-            if is_standard_ascii(char):
+            if char >= " " or char in ('\r', '\n', '\t'):
                 out_code.write(char)
             else:
                 if not has_warned_ctrlchar and err is not None:
@@ -183,9 +182,8 @@ def strip_weird_chars(chardata, err=None, name=""):
 
             charpos += 1
 
-        out_code.write("\n")
+        out_code.write(u"\n")
         line_num += 1
-
     return out_code.getvalue()
 
 def _get_tree(name, code, shell=SPIDERMONKEY_INSTALLATION, errorbundle=None):
