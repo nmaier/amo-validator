@@ -7,7 +7,7 @@ from validator.errorbundler import ErrorBundle
 def _do_test(path, test, failure=True,
              require_install=False, set_type=0):
     
-    package_data = open(path)
+    package_data = open(path, "rb")
     package = XPIManager(package_data, path)
     contents = package.get_file_data()
     err = ErrorBundle()
