@@ -3,6 +3,7 @@ from StringIO import StringIO
 
 from validator import decorator
 from validator import submain as testendpoint_validator
+import validator.testcases.charsethelper as charsethelper
 import validator.testcases.markup.markuptester as testendpoint_markup
 import validator.testcases.markup.csstester as testendpoint_css
 import validator.testcases.scripting as testendpoint_js
@@ -141,7 +142,7 @@ def test_packed_packages(err, package_contents=None, xpi_package=None):
             
             parser = testendpoint_markup.MarkupParser(err)
             parser.process(name,
-                           file_data,
+                           charsethelper.decode(file_data),
                            data["extension"])
             
             processed = True
@@ -151,9 +152,7 @@ def test_packed_packages(err, package_contents=None, xpi_package=None):
             
             if not file_data:
                 continue
-            
-            while not is_standard_ascii(file_data[0]):
-                file_data = file_data[1:]
+            file_data = charsethelper.decode(file_data)
             
             if data["extension"] == "css":
                 testendpoint_css.test_css_file(err,
