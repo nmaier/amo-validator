@@ -337,7 +337,9 @@ def _parse_l10n_doc(name, doc, no_encoding=False):
     # Allow the parse to specify files to skip for encoding checks
     if not no_encoding:
         encoding = chardet.detect(doc)
-        if not encoding or not "encoding" in encoding:
+        if not encoding \
+          or not "encoding" in encoding \
+          or not encoding["encoding"]:
             encoding = ""
         else:
             encoding = encoding["encoding"].upper()
