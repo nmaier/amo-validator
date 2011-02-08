@@ -10,6 +10,8 @@ from validator.chromemanifest import ChromeManifest
 from validator.xpi import XPIManager
 from validator.constants import *
 
+import validator.testcases.charsethelper as charsethelper
+
 import validator.testcases.l10n.dtd as dtd
 import validator.testcases.l10n.properties as properties
 
@@ -339,10 +341,9 @@ def _parse_l10n_doc(name, doc, no_encoding=False):
     
     # Allow the parse to specify files to skip for encoding checks
     if not no_encoding:
-        encoding = chardet.detect(doc)
-        encoding["encoding"] = encoding["encoding"].upper()
-        loc_doc.expected_encoding = encoding["encoding"] in handler_formats
-        loc_doc.found_encoding = encoding["encoding"]
+        encoding = charsethelper.detect(doc).upper()
+        loc_doc.expected_encoding = encoding in handler_formats
+        loc_doc.found_encoding = encoding
         loc_doc.suitable_encoding = handler_formats
 
     return loc_doc
