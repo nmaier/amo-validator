@@ -210,6 +210,9 @@ class MockErrorHandler:
         self.pushable_resources = {}
         self.resources = {}
 
+    def get_resource(self, name):
+        return False
+
     def save_resource(self, name, value, pushable=False):
         "Saves a resource to the bundler"
         resources = self.pushable_resources if pushable else self.resources
