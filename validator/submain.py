@@ -200,7 +200,9 @@ def populate_overlay_tags(err, xpi_package):
         return manager.read(location)
 
     def process_overlay(err, manager, overlay):
-        yield cm.resolve(overlay)
+        resolved = cm.resolve(overlay)
+        if not resolved:
+            return
 
         try:
             xml = XML(get_content(manager, cm.resolve(overlay)))
