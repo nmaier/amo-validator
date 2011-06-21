@@ -147,7 +147,20 @@ class Traverser:
                 global_context_size = len(self.contexts[0].data)
                 self._debug("Final context size: %d" % global_context_size)
 
-                if global_context_size > 3 and not self.is_jsm:
+                self.polluted = global_context_size > 3 and not self.is_jsm
+                if self.polluted:
+                    try:
+                        pack = self.err.package_stack[-1]
+                    except:
+                        pack = "<main>"
+                    try:
+                        tagged = self.err.get_resource("overlay_tags")
+                        if tagged:
+                            self.polluted = self.filename in tagged[pack]
+                    except KeyError:
+                        self.polluted = False
+
+                if self.polluted:
                     self.err.warning(
                         err_id=("testcases_javascript_traverser",
                                 "run",

@@ -174,6 +174,17 @@ class ChromeManifest(object):
 
             yield triple
 
+    def parse_uri(self, uri, baseUri=None):
+        """Attempt to parse a chrome uri"""
+
+        try:
+            if baseUri:
+                uri = urljoin(baseUri, uri)
+            p = urlparse(uri)
+            return uri
+        except:
+            return None
+            
     def get_package(self, uri, baseUri=None):
         """Get the package from a chrome URI"""
 

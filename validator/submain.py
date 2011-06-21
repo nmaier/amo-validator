@@ -1,5 +1,8 @@
 import os
 import re
+from StringIO import StringIO
+from xml.dom.minidom import parseString as XML
+from xml.dom import Node
 
 from validator.typedetection import detect_type
 from validator.opensearch import detect_opensearch
@@ -181,11 +184,72 @@ def populate_chrome_manifest(err, xpi_package):
         chrome = ChromeManifest(chrome_data)
         err.save_resource("chrome.manifest", chrome, pushable=True)
 
+def populate_overlay_tags(err, xpi_package):
+    cm = err.get_resource("chrome.manifest")
+    if not cm:
+        return
+
+    def get_content(manager, location):
+        if location.startswith("jar:"):
+            jar, location = location.split("!", 2)
+            jar = jar[4:]
+            manager = StringIO(manager.read(jar))
+            manager = XPIManager(manager, mode="r", name=jar)
+        if location.startswith("/"):
+            location = location[1:]
+        return manager.read(location)
+
+    def process_overlay(err, manager, overlay):
+        yield cm.resolve(overlay)
+
+        try:
+            xml = XML(get_content(manager, cm.resolve(overlay)))
+            for node in xml.childNodes:
+                if node.nodeType != Node.PROCESSING_INSTRUCTION_NODE or node.target != "xul-overlay":
+                    continue
+                try:
+                    uri = cm.resolve(re.match(r'href=(["\'])(.+?)\1', node.data).group(2), overlay)
+                    if uri:
+                        for rv in process_overlay(err, manager, uri):
+                            yield rv
+                except:
+                    pass
+            for node in xml.getElementsByTagName("script"):
+                if not node.hasAttribute("src"):
+                    # No need to tag snippets
+                    # Those will be handled by the tagged overlay
+                    continue
+                uri = cm.parse_uri(node.getAttribute("src"), overlay)
+                if not uri:
+                    continue
+                resolved = cm.resolve(uri)
+                if not resolved:
+                    continue
+                yield resolved
+        except:
+            raise
+
+    overlays = []
+    tags = {}
+    for o in cm.overlays:
+        overlays.extend(process_overlay(err, xpi_package, o))
+    for o in overlays:
+        package = "<main>"
+        location = o
+        if location.startswith("jar:"):
+            package, location = location.split("!", 2)
+            package = package[4:]
+        try:
+            tags[package].append(location)
+        except KeyError:
+            tags[package] = [location]
+    err.save_resource("overlay_tags", tags)
 
 def test_inner_package(err, xpi_package, for_appversions=None):
     "Tests a package's inner content."
 
     populate_chrome_manifest(err, xpi_package)
+    populate_overlay_tags(err, xpi_package)
 
     # Iterate through each tier.
     for tier in sorted(decorator.get_tiers()):
