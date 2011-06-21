@@ -528,6 +528,7 @@ def _expr_assignment(traverser, node):
                 warning="Global variable overwrite",
                 description="An attempt was made to overwrite a global "
                             "variable in some JavaScript code.",
+                filename=traverser.filename,
                 line=traverser.line,
                 column=traverser.position,
                 context=traverser.context)
