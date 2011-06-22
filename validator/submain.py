@@ -229,7 +229,8 @@ def populate_overlay_tags(err, xpi_package):
                     continue
                 yield resolved
         except:
-            raise
+            # XXX may want to report broken overlays at this point, or somewhere else
+            pass
 
     overlays = []
     tags = {}
