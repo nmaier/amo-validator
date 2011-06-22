@@ -207,7 +207,7 @@ class ChromeManifest(object):
             trip = self.get_triples(subject=ptype, predicate=package).next()
         except:
             return None
-        base = trip["object"]
+        base = trip["object"].split(None, 2)[0]
 
         if not ipath:
             # Shortcut: chrome://pack/content/ -> chrome://pack/content/pack.xul
