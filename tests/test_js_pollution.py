@@ -30,3 +30,14 @@ def test_pollution_jsm():
     d = "foo";
     """, path="foo.jsm", ignore_pollution=False).failed()
 
+def test_pollution_args():
+    """
+    Make sure function arguments do not count towards globals, and hence pollution
+    """
+
+    assert not _do_test_raw("""
+    (function(a) a = "foo")({});
+    (function(b) b = "foo")({});
+    (function(c) c = "foo")({});
+    (function(d) d = "foo")({});
+    """, ignore_pollution=False).failed()
