@@ -197,30 +197,35 @@ class ChromeManifest(object):
         """Resolve a chrome URI to a inner-XPI file path"""
 
         package, path = self.get_package(uri, baseUri)
-        m = re.match(r"[\/]?(content|skin)([\/].+)?$", path)
+        m = re.match(r"[\/]?(content|skin)([\/].*)?$", path)
         if not m:
             return None
         ptype = m.group(1)
         ipath = m.group(2)
 
+        if ipath.startswith("/"):
+            ipath = ipath[1:]
+
         try:
             trip = self.get_triples(subject=ptype, predicate=package).next()
         except:
             return None
-        base = trip["object"].split(None, 2)[0]
 
+        base = trip["object"].split(None, 2)[0]
+        if not base.endswith("/"):
+            base += "/"
+        
         if not ipath:
             # Shortcut: chrome://pack/content/ -> chrome://pack/content/pack.xul
             if ptype == "content":
-                ipath = trip["object"] + package + ".xul"
+                ipath = package + ".xul"
 
             # Shortcut: chrome://pack/skin/ -> chrome://pack/skin/pack.css
             elif ptype == "skin":
-                ipath = trip["object"] + package + ".css"
+                ipath = package + ".css"
 
-            return None
-        if ipath.startswith("/") and base.endswith("/"):
-            ipath = ipath[1:]
+            else:
+                return None
+
         return base + ipath
-
 
